@@ -1,0 +1,23 @@
+- How to create a scenario
+  - Write scenario file 
+    - Use commented source files for reference
+      - InfoWarScenario.java
+      	Most complicated scenario, possessing a heterogeneous network layout and many types of agents installed in different locations.
+      - SOMASAgentGenerator.java
+        Describes how the SOMAS agent generator works, which uses the decision space from the MOEA to set the agent parameters.
+	This is the most complicated agent generator. 
+      - WeightedRule.java
+        Describes how the SOMAS agent makes its decisions.  Fairly simple, though the weighted sum function is slightly tricky.       	
+      - CompromiseAgentGenerator.java
+        Describes how an agent generator works for the most complicated non SOMAS agent      	
+      - CompromiseAgentRule.java
+        Describes how the compromise agent acts on the network.  This is the most complicated rule, since it is primarily semantics, very little algorithmics involved. 
+    - Make sure it runs
+  - Export to jar
+    (Directions assume IDE is Eclipse)
+    - Right click on scenario class and select export
+    - "Select" : Choose export to jar
+    - "JAR File Specification" : Ensure MASON and SGA projects are also selected, and target file is SOMAEvol.jar 
+    - Press "Finish"
+  - Place jar in correct folder: analysis/assessment/SOMAEvol_linux/
+  - Run scripts (see script directions in PISA directory)

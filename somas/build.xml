@@ -1,0 +1,49 @@
+<project name='SOMAS Simulator' default="run" basedir="./">
+
+  <property name="lib.dir" value="${basedir}/lib"/>
+  <property name="src.dir" value="${basedir}/src"/>
+  <property name="build.dir" value="${basedir}/build/classes"/>
+  <property name="dist.dir" value="${basedir}/build/dist"/>
+  <property name="package.mason" value="${basedir}../../../mason/"/>
+
+  <fileset dir="${lib.dir}" id="lib.files">
+    <include name="**/*.jar"/>
+  </fileset>
+
+  <path id="scenario.classpath">
+    <fileset dir="${lib.dir}">
+      <include name="**/*.jar"/>
+    </fileset>
+    <pathelement path="${package.mason}"/>
+  </path>
+
+  <target name="build">
+    <javac srcdir="${src.dir}"
+           destdir="${build.dir}"
+           classpathref="scenario.classpath"
+           debug="on"
+           source="1.6"
+	   />
+  </target>
+
+  <target name="jar">
+    <jar destfile="SOMASSim_Visualize.jar">
+      <manifest file="Manifest">
+	<section name="common">
+	  <attribute name="Manifest-Version" value="1.0"/>
+	  <attribute name="Main-Class" value="scenario.CompetitionScenario"/>
+	  <attribute name="Class-Path" refid="lib.files"/>
+	  <attribute name="Sealed" value="true"/>
+	</section>
+      </manifest>
+    </jar>
+  </target>
+
+  <target name="run">
+    <java fork="yes" classname="scenario.InfoWarScenario" classpathref="scenario.classpath">
+      <jvmarg value="-Xmx16m" />
+    </java>       
+  </target>
+
+</project> 
+
