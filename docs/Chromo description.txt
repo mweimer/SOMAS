@@ -1,0 +1,29 @@
+The entire decision space is made up of 5000 bits or 625 bytes. The decision space is composed of 3 chromosomes. Currently, each chromosome is a 172 bytes long. This leaves 109 bytes at the end of the decision space unused, which allows to easily add more sensors or actuators to a SOMAS agent. The first chromosome is used to determine the weights for the SOMAS agents' actuator decision variables and parameters, as well as to set the agents' sensor parameter values. The other chromosomes are used with online search. If the option to evolve chromosomes is turned off, then only the first chromosome is used.
+
+Within a single chromosome, each byte represents a gene. This gene value is determined by taking the 8-bit binary, Gray-encoded value and converting it to a decimal integer. Then dividing that value by the max value for a byte (512). This will give a gene value value between 0.0 and 1.0. Since a chromosome is 172 bytes, it therefore has a 172 genes.
+
+Section 1 of the chromosomes is the miscellaneous genes. There is currently only one gene in this section. This very first gene is for the pheromone value. This appears first because the value must be extracted before the SetPheromoneOnSelfChromosome actuator is initialized.
+
+Section 2 is the set of genes which are the weights used for the actuator's decision variables. Each actuator decision variable has a weight for every sensor. Currently, there are 10 actuators and 8 sensors, so this section is made up of 80 (8*10) genes.
+
+Section 3 is the set of genes which are the weights for the actuator parameters. Some actuators have 0 parameters, some have 2, but most have 1. Each actuator parameter has a weight for every sensor. Currently, there are 10 actuator parameters and 8 sensors, so this section is made up of 80 (8*10) genes.
+
+Section 4 is last set of genes and they are used to set the values for the the sensor parameters. Currently, 5 of the sensors have have 2 parameters, 1 sensor has 1 parameter, and 2 sensors have 0 parameters, so this section has 11 (5*2+1+0) genes. So adding them all up you can see the whole chromosome has 172 (1+80+80+11) genes.
+
+The weights from section 2, the actuator decision variable weights, determine the agent's behavior. Each step of the simulation, each of the 10 actuators are looked at individually to determine if they will be fired. The first step in this process is to get all 8 of the sensors' values. Then for an individual actuator, its 8 weight for each sensor are retrieved. These 8 sensor values and 8 weights are given to a weight function.
+
+The weight function works by taking each weight value, scaling it by subtracting 0.5.
+scaled weight value = weight value – 0.5
+Then if the scaled weight value is greater than 0, the sine of scaled weight value multiplied by PI and 0.5 is calculated. The sine value is then multiplied by 1 minus the corresponding sensor value. This gives a new “addition value”.
+Addition value = sin(scaled weight value * PI * 0.5) * (1 – sensor value)
+If the scaled weight value is less or equal to 0, the sine of scaled weight value is multiplied by PI and 0.5 is calculated. The sine value is then multiplied by corresponding sensor value. This gives a new negative “addition value”.
+Addition value = sin(scaled weight value * PI * 0.5) * (sensor value)
+The sensor value is then added to the new addition value to get a scaled sensor value.
+Scaled sensor value = sensor value + addition value
+Next the scaled sensor value is multiplied by the original weight value and added to to a sum.
+Weighted scaled sum = Weighted scaled sum + (scaled sensor value * weight value)
+This done for each sensor value and its corresponding sensor weight. So the above process it done 8 times, once for each sensor. When the final weighted scaled sum is calculated, it is divided by the sum of all original weight values to get the decision value which is returned by the weight function
+decision value = weighted scaled sum / sum of weights
+
+Returning to the actuators, when the decision value is returned and it is above 0.5, then the actuator is fired. This process is repeated for each actuator.
+If an actuator is to be fired, it may have parameters it needs to determine exactly what to do. This is where the weights form section 3 are used. For, example the the ChangeLocation actuator needs an integer as a parameter to determine the location number of the next location. It uses it corresponding weights in the chromosome to get this value. Using the same weight function above, it will get back a value between 0.0 and 1.0. It simply uses a new set of weights and the same sensor values as before. Gives them to the weight function to get a decision value which will be used to determine the parameter value. In the case of ChangeLocation actuator it will take the double value, which is between 0.0 and 1.0, and convert it to an integer for its use.
